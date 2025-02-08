@@ -37,7 +37,7 @@
   /* background-color: #2b4764; */
   background-color: rgb(80, 154, 156);
   color: black;
-  padding: 7px;
+  padding: 6.5px;
 }
 
 /* Main Content */
@@ -71,6 +71,12 @@
   }
 }
 
+
+/* forms */
+
+.feildtag {
+ margin-left: 50px;
+}
 
 .resizable {
   position: relative;

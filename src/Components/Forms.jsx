@@ -23,19 +23,16 @@ const DraggableField = ({ field }) => {
   }));
 
   return (
-    <div ref={drag} className="p-2 border bg-light mb-2" style={{ opacity: isDragging ? 0.5 : 1 }}>
+    <div ref={drag} className="p-2 border bg-light mb-2 w-75" style={{ opacity: isDragging ? 0.5 : 1 }}>
       {field.label}
     </div>
   );
 };
 
-const DroppableField = ({ field, index, moveField, handleLabelChange, handleResize }) => {
-  const [{ isDragging }, drag] = useDrag(() => ({
+const DroppableField = ({ field, index, moveField, handleLabelChange }) => {
+  const [, drag] = useDrag(() => ({
     type: "FORM_FIELD",
     item: { index },
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
   }));
 
   const [, drop] = useDrop(() => ({
@@ -49,12 +46,13 @@ const DroppableField = ({ field, index, moveField, handleLabelChange, handleResi
   }));
 
   return (
-    <div ref={(node) => drag(drop(node))} className="p-2 border mb-2 bg-light resizable" style={{ opacity: isDragging ? 0.5 : 1, width: field.width }}>
+    <div ref={(node) => drag(drop(node))} className="d-flex align-items-center gap-2 p-2 bg-white">
       <input
         type="text"
-        className="form-control mb-2"
+        className="form-control"
         value={field.label}
         onChange={(e) => handleLabelChange(field.id, e.target.value)}
+        style={{ width: "150px" }}
       />
       {field.type === "text" && <input type="text" className="form-control" />}
       {field.type === "textarea" && <textarea className="form-control"></textarea>}
@@ -66,20 +64,19 @@ const DroppableField = ({ field, index, moveField, handleLabelChange, handleResi
         </select>
       )}
       {field.type === "radio" && (
-        <div>
+        <div className="d-flex align-items-center gap-2">
           <input type="radio" name={`radio-${field.id}`} /> Option 1
-          <input type="radio" name={`radio-${field.id}`} className="ms-2" /> Option 2
+          <input type="radio" name={`radio-${field.id}`} /> Option 2
         </div>
       )}
       {field.type === "checkbox" && (
-        <div>
+        <div className="d-flex align-items-center gap-2">
           <input type="checkbox" /> Option 1
-          <input type="checkbox" className="ms-2" /> Option 2
+          <input type="checkbox" /> Option 2
         </div>
       )}
       {field.type === "date" && <input type="date" className="form-control" />}
       {field.type === "file" && <input type="file" className="form-control" />}
-      <div className="resize-handle" onMouseDown={(e) => handleResize(field.id, e)}></div>
     </div>
   );
 };
@@ -88,7 +85,7 @@ const DroppableForm = ({ fields, setFields }) => {
   const [, drop] = useDrop(() => ({
     accept: "FIELD",
     drop: (item) =>
-      setFields((prevFields) => [...prevFields, { ...item, id: Date.now(), label: item.label, width: 200 }]),
+      setFields((prevFields) => [...prevFields, { ...item, id: Date.now(), label: item.label }]),
   }));
 
   const moveField = (fromIndex, toIndex) => {
@@ -106,26 +103,17 @@ const DroppableForm = ({ fields, setFields }) => {
     );
   };
 
-  const handleResize = (id, event) => {
-    event.preventDefault();
-    document.onmousemove = (e) => {
-      const newWidth = e.clientX - event.target.parentElement.offsetLeft;
-      setFields((prevFields) =>
-        prevFields.map((field) => (field.id === id ? { ...field, width: newWidth } : field))
-      );
-    };
-    document.onmouseup = () => {
-      document.onmousemove = null;
-      document.onmouseup = null;
-    };
-  };
-
   return (
     <div ref={drop} className="border p-3 bg-white" style={{ minHeight: "400px" }}>
-      <h5 className="text-center">Drop Fields Here</h5>
       <div className="d-flex flex-column gap-2">
         {fields.map((field, index) => (
-          <DroppableField key={field.id} field={field} index={index} moveField={moveField} handleLabelChange={handleLabelChange} handleResize={handleResize} />
+          <DroppableField
+            key={field.id}
+            field={field}
+            index={index}
+            moveField={moveField}
+            handleLabelChange={handleLabelChange}
+          />
         ))}
       </div>
     </div>
@@ -137,15 +125,18 @@ const Forms = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="container mt-4">
+      <div className="container mt-3">
         <div className="row">
-          <div className="col-md-4">
-            <h4>Form Fields</h4>
+          <div className="col-md-3">
+            <h4 className="fw-bolder text-center mb-3">Form Fields</h4>
+            <span className="justify-content-center d-flex flex-wrap">
             {fieldTypes.map((field, index) => (
               <DraggableField key={index} field={field} />
             ))}
+            </span>
           </div>
           <div className="col-md-8">
+          <h4 className="fw-bolder text-center mb-3">Drop Fields Here</h4>
             <DroppableForm fields={fields} setFields={setFields} />
           </div>
         </div>
